@@ -7,6 +7,11 @@ import (
     "time"
 )
 
+type StoreInterface interface {
+    Append(topic string, partition int, content string)
+    Get(topic string, partition int, offset int) ([]Message, error)
+}
+
 type Message struct {
     Offset    int64
     Content   string
@@ -19,7 +24,7 @@ type Store struct {
 }
 
 // Constructor
-func newStore() *Store {
+func NewStore() *Store {
 	return &Store{
         partitions: make(map[string]map[int][]Message),		
 	}
