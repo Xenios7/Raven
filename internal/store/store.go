@@ -1,80 +1,104 @@
 package store
 
-
 import (
-    "fmt"
-    "sync"
-    "time"
+	"fmt"
+	"sync"
+	"time"
 )
 
 type StoreInterface interface {
-    Append(topic string, partition int, content string)
-    Get(topic string, partition int, offset int) ([]Message, error)
+	Append(topic string, partition int, content string)
+	Get(topic string, partition int, offset int) ([]Message, error)
+	GetAllPerTopic(topic string) ([]Message, error)
+	GetAll() ([]Message, error)
 }
 
 type Message struct {
-    Offset    int64
-    Content   string
-    CreatedAt time.Time
+	Offset    int64
+	Content   string
+	CreatedAt time.Time
 }
 
 type Store struct {
-    mu         sync.RWMutex
-    partitions map[string]map[int][]Message
+	mu     sync.RWMutex
+	topics map[string]map[int][]Message
 }
 
-// Constructor
 func NewStore() *Store {
 	return &Store{
-        partitions: make(map[string]map[int][]Message),		
+		topics: make(map[string]map[int][]Message),
 	}
 }
 
 /********************************************************************/
 func (s *Store) Append(topic string, partition int, content string) {
-    s.mu.Lock()
-    defer s.mu.Unlock()
+	s.mu.Lock()
+	defer s.mu.Unlock()
 
-    if s.partitions[topic] == nil {
-        s.partitions[topic] = make(map[int][]Message)
-    }
+	if s.topics[topic] == nil {
+		s.topics[topic] = make(map[int][]Message)
+	}
 
-    s.partitions[topic][partition] = append(
-        s.partitions[topic][partition],
-        Message{
-            Offset:    int64(len(s.partitions[topic][partition])),
-            Content:   content,
-            CreatedAt: time.Now(),
-        },
-    )
+	s.topics[topic][partition] = append(
+		s.topics[topic][partition],
+		Message{
+			Offset:    int64(len(s.topics[topic][partition])),
+			Content:   content,
+			CreatedAt: time.Now(),
+		},
+	)
 }
+
 /********************************************************************/
 func (s *Store) Get(topic string, partition int, offset int) ([]Message, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 
-	s.mu.RLock() 
-	defer s.mu.RUnlock() 
-
-	if s.partitions[topic] == nil || s.partitions[topic][partition] == nil  {
+	if s.topics[topic] == nil || s.topics[topic][partition] == nil {
 		return nil, fmt.Errorf("topic or partition not found")
 	}
-	
-	answer := []Message{} //same as var answer []Message
 
-	for ; offset < len(s.partitions[topic][partition]); offset++ {
+	answer := []Message{}
+
+	for ; offset < len(s.topics[topic][partition]); offset++ {
 		answer = append(
-			answer, 
-			s.partitions[topic][partition][offset],
+			answer,
+			s.topics[topic][partition][offset],
 		)
 	}
 	return answer, nil
 }
 
+/********************************************************************/
+func (s *Store) GetAllPerTopic(topic string) ([]Message, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 
+	if s.topics[topic] == nil {
+		return nil, fmt.Errorf("topic not found")
+	}
 
+	answer := []Message{}
 
+	for _, messages := range s.topics[topic] {
+		answer = append(answer, messages...)
+	}
 
+	return answer, nil
+}
 
+/********************************************************************/
+func (s *Store) GetAll() ([]Message, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 
+	answer := []Message{}
 
+	for _, partitionsForTopic := range s.topics {
+		for _, messages := range partitionsForTopic {
+			answer = append(answer, messages...)
+		}
+	}
 
-
+	return answer, nil
+}

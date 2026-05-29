@@ -78,7 +78,33 @@ func (h *Handler) ConsumeHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(messages)
 }
 
+func (h *Handler) ConsumeAllPerTopicHandler(w http.ResponseWriter, r *http.Request) {
+	topic := r.URL.Query().Get("topic")
+	if topic == "" {
+		http.Error(w, "topic is required", http.StatusBadRequest)
+		return
+	}
 
+	messages, err := h.broker.ConsumeAllPerTopic(topic)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(messages)
+}
+
+func (h *Handler) ConsumeAllHandler(w http.ResponseWriter, r *http.Request) {
+	messages, err := h.broker.ConsumeAll()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(messages)
+}
 
 
 

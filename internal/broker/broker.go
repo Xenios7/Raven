@@ -9,6 +9,8 @@ import (
 type BrokerInterface interface {
     Publish(content string, topic string, key string, numPartitions int)
     Consume(topic string, partition int, offset int) ([]store.Message, error)
+	ConsumeAllPerTopic(topic string) ([]store.Message, error)
+	ConsumeAll() ([]store.Message, error)
 }
 
 type Broker struct {
@@ -51,6 +53,13 @@ func (b *Broker) Consume(topic string, partition int, offset int) ([]store.Messa
 	return b.store.Get(topic, partition, offset)
 }
 
+func (b *Broker) ConsumeAllPerTopic(topic string) ([]store.Message, error){
+	return b.store.GetAllPerTopic(topic)
+}
+
+func (b *Broker) ConsumeAll() ([]store.Message, error){
+	return b.store.GetAll()
+}
 
 
 
