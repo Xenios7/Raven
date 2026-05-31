@@ -102,3 +102,8 @@ func (s *Store) GetAll() ([]Message, error) {
 
 	return answer, nil
 }
+
+
+
+
+

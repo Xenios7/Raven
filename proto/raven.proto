@@ -1,0 +1,29 @@
+syntax = "proto3";
+package raven;
+
+option go_package = "github.com/Xenios7/Raven/proto";
+
+message ReplicaMessage {
+  
+    int64 offset = 1;
+    string content = 2;
+    string topic = 3;
+    int32 partition = 4;
+    string created_at = 5;
+
+}
+
+message ReplicateResponse {
+  
+    bool success = 1;
+    string error = 2;
+
+}
+
+service ReplicationService {
+    rpc Replicate(ReplicaMessage) returns (ReplicateResponse);
+}
+
+
+
+

@@ -1,9 +1,12 @@
 package broker
 
 import (
+	"fmt"
 	"hash/fnv"
+	"time"
 
 	"github.com/Xenios7/Raven/internal/store"
+	"github.com/Xenios7/Raven/proto"
 )
 
 type BrokerInterface interface {
@@ -15,14 +18,17 @@ type BrokerInterface interface {
 
 type Broker struct {
     store store.StoreInterface //Reference to store struct(interface)
+	//Replicator needed for updating replicas
+	replicator *Replicator
 }
 
 // Constructor
 // Needs store interface (it doesn't know or care if the caller passed in a real *Store, a fake test store, or a disk-based store. It just knows it can call Append and Get on it.)
 // so it can initialize the store that it has
-func NewBroker(s store.StoreInterface) *Broker {
+func NewBroker(s store.StoreInterface, r *Replicator) *Broker {
 	return &Broker{
 		store: s,
+		replicator: r,
 	}
 }
 
@@ -46,6 +52,21 @@ func (b *Broker) Publish(content string, topic string, key string, numPartitions
 	//Append using store structure from store/
 	b.store.Append(topic, partitionNumber, content)
 
+	/*******************************/
+	/*******************************/
+	// We need to update the replicas
+	msg := &proto.ReplicaMessage{ //No need for a constructor here, in Go we can do this in this way if we want, ofcourse constructor works as well but here we don't have one.
+		Topic:     topic,
+		Content:   content,
+		Partition: int32(partitionNumber),
+		//Offset will be calculated by the other broker node inside of store when it Appneds it. So we don't set it here.
+		CreatedAt: time.Now().String(),
+	}
+
+	// b.replicator.Replicate(msg)
+	if err := b.replicator.Replicate(msg); err != nil {
+		fmt.Println("replication error:", err)
+	}
 }
 
 /********************************************************************/
