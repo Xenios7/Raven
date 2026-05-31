@@ -8,6 +8,10 @@ import (
     proto "github.com/Xenios7/Raven/proto"
 )
 
+type ReplicatorInterface interface {
+    Replicate(msg *proto.ReplicaMessage) error
+}
+
 type Replicator struct {
 	replicaAddresses []string
 }

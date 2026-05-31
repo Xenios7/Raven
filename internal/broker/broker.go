@@ -19,13 +19,13 @@ type BrokerInterface interface {
 type Broker struct {
     store store.StoreInterface //Reference to store struct(interface)
 	//Replicator needed for updating replicas
-	replicator *Replicator
+	replicator ReplicatorInterface
 }
 
 // Constructor
 // Needs store interface (it doesn't know or care if the caller passed in a real *Store, a fake test store, or a disk-based store. It just knows it can call Append and Get on it.)
 // so it can initialize the store that it has
-func NewBroker(s store.StoreInterface, r *Replicator) *Broker {
+func NewBroker(s store.StoreInterface, r ReplicatorInterface) *Broker {
 	return &Broker{
 		store: s,
 		replicator: r,
