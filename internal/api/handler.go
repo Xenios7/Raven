@@ -26,6 +26,13 @@ type PublishRequest struct {
     NumPartitions int    `json:"numPartitions"`
 }
 
+type AckRequest struct {	
+	Group 		 	string `json:"group"`
+	Topic			string `json:"topic"`
+	Partition		int    `json:"partition"`
+	Offset			int    `json:"offset"`
+}
+
 func (h *Handler) PublishHandler(w http.ResponseWriter, r *http.Request) {
 
 	var req PublishRequest
@@ -136,7 +143,20 @@ func (h *Handler) ConsumeWithGroupHandler(w http.ResponseWriter, r *http.Request
 	json.NewEncoder(w).Encode(messages)
 }
 
+func (h *Handler) AckHandler(w http.ResponseWriter, r *http.Request) {
 
+	var req AckRequest
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "invalid request", http.StatusBadRequest)
+        return
+	}
+
+	h.broker.Ack(req.Group, req.Topic, req.Partition, req.Offset)
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("offset committed"))
+
+}
 
 
 

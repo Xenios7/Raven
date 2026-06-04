@@ -14,8 +14,10 @@ type BrokerInterface interface {
     Consume(topic string, partition int, offset int) ([]store.Message, error)
 	ConsumeAllPerTopic(topic string) ([]store.Message, error)
 	ConsumeAll() ([]store.Message, error)
-	
-	 ConsumeWithGroup(group string, topic string, partition int) ([]store.Message, error)
+
+	ConsumeWithGroup(group string, topic string, partition int) ([]store.Message, error)
+
+	Ack(group string, topic string, partition int, offset int)
 }
 
 type Broker struct {
@@ -98,11 +100,14 @@ func (b *Broker) ConsumeWithGroup(group string, topic string, partition int) ([]
 
 	newOffset := offset + len(messages) // New offset = old offset + number of messages prossed
 
-	b.store.CommitOffset(group, topic, partition, newOffset)
+	// b.store.CommitOffset(group, topic, partition, newOffset)
 
 	return  messages, err
 }
 
+func (b *Broker) Ack(group string, topic string, partition int, offset int) {
+    b.store.CommitOffset(group, topic, partition, offset)
+}
 
 
 
