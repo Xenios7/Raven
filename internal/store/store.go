@@ -11,6 +11,9 @@ type StoreInterface interface {
 	Get(topic string, partition int, offset int) ([]Message, error)
 	GetAllPerTopic(topic string) ([]Message, error)
 	GetAll() ([]Message, error)
+
+	CommitOffset(group string, topic string, partition int, offset int)
+	GetOffset(group string, topic string, partition int) int 
 }
 
 type Message struct {
@@ -22,11 +25,14 @@ type Message struct {
 type Store struct {
 	mu     sync.RWMutex
 	topics map[string]map[int][]Message
+	//M3
+	offsets map[string]map[string]map[int]int
 }
 
 func NewStore() *Store {
 	return &Store{
 		topics: make(map[string]map[int][]Message),
+		offsets: make(map[string]map[string]map[int]int),
 	}
 }
 
@@ -102,8 +108,32 @@ func (s *Store) GetAll() ([]Message, error) {
 
 	return answer, nil
 }
+// M3
+/********************************************************************/
+func (s *Store) GetOffset(group string, topic string, partition int) int {
 
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 
+	if s.offsets[group] == nil || s.offsets[group][topic] == nil {
+		return 0 //If the group or topic don't exist yet it's okay we just return 0
+	}
+	return s.offsets[group][topic][partition]
+}
 
+func (s *Store) CommitOffset(group string, topic string, partition int, offset int) {
 
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	
+	//Just create it 
+	if s.offsets[group] == nil {
+		s.offsets[group] = make(map[string]map[int]int)
+	}
+	if s.offsets[group][topic] == nil {
+		s.offsets[group][topic] = make(map[int]int)
+	}
+
+	s.offsets[group][topic][partition] = offset	
+}
 

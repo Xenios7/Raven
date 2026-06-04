@@ -14,6 +14,8 @@ type BrokerInterface interface {
     Consume(topic string, partition int, offset int) ([]store.Message, error)
 	ConsumeAllPerTopic(topic string) ([]store.Message, error)
 	ConsumeAll() ([]store.Message, error)
+	
+	 ConsumeWithGroup(group string, topic string, partition int) ([]store.Message, error)
 }
 
 type Broker struct {
@@ -83,6 +85,23 @@ func (b *Broker) ConsumeAll() ([]store.Message, error){
 }
 
 
+/******************************* M3 *************************************/
+//Does the same thing as Consume only difference is that it tracks offset per group, also we update offset after we proccess messages
+func (b *Broker) ConsumeWithGroup(group string, topic string, partition int) ([]store.Message, error) {
+
+	offset := b.store.GetOffset(group, topic, partition)
+
+	messages, err := b.store.Get(topic, partition, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	newOffset := offset + len(messages) // New offset = old offset + number of messages prossed
+
+	b.store.CommitOffset(group, topic, partition, newOffset)
+
+	return  messages, err
+}
 
 
 

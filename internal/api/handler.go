@@ -106,6 +106,36 @@ func (h *Handler) ConsumeAllHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(messages)
 }
 
+func (h *Handler) ConsumeWithGroupHandler(w http.ResponseWriter, r *http.Request) {
+
+	topic := r.URL.Query().Get("topic")
+	if topic == "" {
+		http.Error(w, "topic is required", http.StatusBadRequest)
+   		return
+	}
+	
+	partition, err := strconv.Atoi(r.URL.Query().Get("partition"))
+	if err != nil {
+		http.Error(w, "invalid partition", http.StatusBadRequest)
+   		return
+	}
+
+	//Get the group name (not offset like before)
+	group := r.URL.Query().Get("group")
+	if group == "" {
+		http.Error(w, "group is required", http.StatusBadRequest)
+   		return
+	}
+
+	messages, err := h.broker.ConsumeWithGroup(group, topic, partition)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+    	return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(messages)
+}
+
 
 
 
