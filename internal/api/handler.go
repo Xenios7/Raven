@@ -143,6 +143,8 @@ func (h *Handler) ConsumeWithGroupHandler(w http.ResponseWriter, r *http.Request
 	json.NewEncoder(w).Encode(messages)
 }
 
+// The ack endpoint is the explicit "I finished processing" signal.
+// Without it the offset never moves and the consumer keeps getting the same messages.
 func (h *Handler) AckHandler(w http.ResponseWriter, r *http.Request) {
 
 	var req AckRequest

@@ -10,6 +10,7 @@ func NewRouter(h *Handler) *http.ServeMux {
 	mux.HandleFunc("GET /consume/topic", h.ConsumeAllPerTopicHandler)
 	mux.HandleFunc("GET /consume/all", h.ConsumeAllHandler)
 	mux.HandleFunc("GET /consume/group", h.ConsumeWithGroupHandler)
-	
+	mux.HandleFunc("POST /ack", h.AckHandler)
+
 	return mux
 }

@@ -98,7 +98,7 @@ func (b *Broker) ConsumeWithGroup(group string, topic string, partition int) ([]
 		return nil, err
 	}
 
-	newOffset := offset + len(messages) // New offset = old offset + number of messages prossed
+	// newOffset := offset + len(messages) // New offset = old offset + number of messages prossed
 
 	// b.store.CommitOffset(group, topic, partition, newOffset)
 
