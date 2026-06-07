@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"os"
+	"strings"
 
 	"github.com/Xenios7/Raven/internal/api"
 	"github.com/Xenios7/Raven/internal/broker"
@@ -28,33 +30,34 @@ func startGRPCServer(replServer *broker.ReplicationServer, addr string) {
 }
 
 func main() {
-	fmt.Println("Raven broker starting...")
+    fmt.Println("Raven broker starting...")
 
-	// --- Replica 2 (gRPC only, no HTTP) ---
-	s2 := store.NewStore()
-	replServer2 := broker.NewReplicationServer(s2)
-	go startGRPCServer(replServer2, ":9001")
+    role := os.Getenv("ROLE")
+    grpcPort := os.Getenv("GRPC_PORT")
+    replicaAddrs := os.Getenv("REPLICA_ADDRS")
 
-	// --- Replica 3 (gRPC only, no HTTP) ---
-	s3 := store.NewStore()
-	replServer3 := broker.NewReplicationServer(s3)
-	go startGRPCServer(replServer3, ":9002")
+    if role == "replica" {
+        s := store.NewStore()
+        replServer := broker.NewReplicationServer(s)
+		// runs forever waiting for gRPC calls
+        go startGRPCServer(replServer, ":"+grpcPort) //use goroutine because startGRPCServer blocks forever, so it runs in the background.
+    } else {
+        // leader
+        s := store.NewStore()
+        addrs := strings.Split(replicaAddrs, ",")
+        replicator := broker.NewReplicator(addrs)
+        b := broker.NewBroker(s, replicator)
+        h := api.NewHandler(b)
+        r := api.NewRouter(h)
 
-	// --- Leader Broker (HTTP + replicates to :9001 and :9002) ---
-	s1 := store.NewStore()
-	replicator := broker.NewReplicator([]string{":9001", ":9002"})
-	b := broker.NewBroker(s1, replicator)
-	h := api.NewHandler(b)
-	r := api.NewRouter(h)
+		// runs forever waiting for http requests
+        go func() { // use goroutine http.ListenAndServe never stops it runs forever waiting for requests
+            fmt.Println("HTTP server listening on :8080")
+            if err := http.ListenAndServe(":8080", r); err != nil {
+                fmt.Println("HTTP server error:", err)
+            }
+        }()
+    }
 
-	// start HTTP server in background goroutine
-	go func() {
-		fmt.Println("HTTP server listening on :8080")
-		if err := http.ListenAndServe(":8080", r); err != nil {
-			fmt.Println("HTTP server error:", err)
-		}
-	}()
-
-	// block main from exiting — keep all goroutines alive
-	select {}
+    select {}
 }

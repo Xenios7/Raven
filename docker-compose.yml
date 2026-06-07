@@ -1,0 +1,49 @@
+services:
+  leader:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    environment:
+      - ROLE=leader
+      - REPLICA_ADDRS=replica1:9001,replica2:9002
+    ports:
+      - "8080:8080"
+    depends_on:
+      - replica1
+      - replica2
+
+  replica1:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    environment:
+      - ROLE=replica
+      - GRPC_PORT=9001
+    ports:
+      - "9001:9001"
+
+  replica2:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    environment:
+      - ROLE=replica
+      - GRPC_PORT=9002
+    ports:
+      - "9002:9002"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      
