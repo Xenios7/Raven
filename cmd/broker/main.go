@@ -36,19 +36,23 @@ func main() {
     replicaAddrs := os.Getenv("REPLICA_ADDRS")
 
     // K8s StatefulSet role detection via pod hostname
-    if role == "" {
-        hostname, _ := os.Hostname()
-        if strings.HasSuffix(hostname, "-0") {
-            role = "leader"
-            replicaAddrs = "raven-1.raven:9001,raven-2.raven:9002"
-        } else if strings.HasSuffix(hostname, "-1") {
-            role = "replica"
-            grpcPort = "9001"
-        } else {
-            role = "replica"
-            grpcPort = "9002"
-        }
-    }
+	if role == "" {
+		hostname, _ := os.Hostname()
+		if strings.HasPrefix(hostname, "raven-") {
+			if strings.HasSuffix(hostname, "-0") {
+				role = "leader"
+				replicaAddrs = "raven-1.raven:9001,raven-2.raven:9002"
+			} else if strings.HasSuffix(hostname, "-1") {
+				role = "replica"
+				grpcPort = "9001"
+			} else {
+				role = "replica"
+				grpcPort = "9002"
+			}
+		} else {
+			role = "leader"
+		}
+	}
 
     if role == "replica" {
         s := store.NewStore()

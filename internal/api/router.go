@@ -1,6 +1,9 @@
 package api
 
-import "net/http"
+import (
+	"net/http"
+    "github.com/prometheus/client_golang/prometheus/promhttp"
+)
 
 func NewRouter(h *Handler) *http.ServeMux {
 	mux := http.NewServeMux()
@@ -11,6 +14,7 @@ func NewRouter(h *Handler) *http.ServeMux {
 	mux.HandleFunc("GET /consume/all", h.ConsumeAllHandler)
 	mux.HandleFunc("GET /consume/group", h.ConsumeWithGroupHandler)
 	mux.HandleFunc("POST /ack", h.AckHandler)
+    mux.Handle("/metrics", promhttp.Handler())
 
 	return mux
 }

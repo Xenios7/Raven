@@ -56,6 +56,7 @@ func (b *Broker) Publish(content string, topic string, key string, numPartitions
 	//Append using store structure from store/
 	b.store.Append(topic, partitionNumber, content)
 
+	MessagesPublished.Inc() // this is for prometheus
 	/*******************************/
 	/*******************************/
 	// We need to update the replicas
@@ -70,11 +71,13 @@ func (b *Broker) Publish(content string, topic string, key string, numPartitions
 	// b.replicator.Replicate(msg)
 	if err := b.replicator.Replicate(msg); err != nil {
 		fmt.Println("replication error:", err)
+		ReplicationErrors.Inc()// this is for prometheus
 	}
 }
 
 /********************************************************************/
 func (b *Broker) Consume(topic string, partition int, offset int) ([]store.Message, error){
+	MessagesConsumed.Inc() // this is for prometheus
 	return b.store.Get(topic, partition, offset)
 }
 
@@ -101,6 +104,7 @@ func (b *Broker) ConsumeWithGroup(group string, topic string, partition int) ([]
 	// newOffset := offset + len(messages) // New offset = old offset + number of messages prossed
 
 	// b.store.CommitOffset(group, topic, partition, newOffset)
+    MessagesConsumed.Inc()
 
 	return  messages, err
 }
