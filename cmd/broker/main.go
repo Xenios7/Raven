@@ -28,7 +28,6 @@ func startGRPCServer(replServer *broker.ReplicationServer, addr string) {
 		fmt.Println("gRPC server error:", err)
 	}
 }
-
 func main() {
     fmt.Println("Raven broker starting...")
 
@@ -36,13 +35,26 @@ func main() {
     grpcPort := os.Getenv("GRPC_PORT")
     replicaAddrs := os.Getenv("REPLICA_ADDRS")
 
+    // K8s StatefulSet role detection via pod hostname
+    if role == "" {
+        hostname, _ := os.Hostname()
+        if strings.HasSuffix(hostname, "-0") {
+            role = "leader"
+            replicaAddrs = "raven-1.raven:9001,raven-2.raven:9002"
+        } else if strings.HasSuffix(hostname, "-1") {
+            role = "replica"
+            grpcPort = "9001"
+        } else {
+            role = "replica"
+            grpcPort = "9002"
+        }
+    }
+
     if role == "replica" {
         s := store.NewStore()
         replServer := broker.NewReplicationServer(s)
-		// runs forever waiting for gRPC calls
-        go startGRPCServer(replServer, ":"+grpcPort) //use goroutine because startGRPCServer blocks forever, so it runs in the background.
+        go startGRPCServer(replServer, ":"+grpcPort)
     } else {
-        // leader
         s := store.NewStore()
         addrs := strings.Split(replicaAddrs, ",")
         replicator := broker.NewReplicator(addrs)
@@ -50,8 +62,7 @@ func main() {
         h := api.NewHandler(b)
         r := api.NewRouter(h)
 
-		// runs forever waiting for http requests
-        go func() { // use goroutine http.ListenAndServe never stops it runs forever waiting for requests
+        go func() {
             fmt.Println("HTTP server listening on :8080")
             if err := http.ListenAndServe(":8080", r); err != nil {
                 fmt.Println("HTTP server error:", err)

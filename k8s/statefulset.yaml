@@ -1,0 +1,49 @@
+# This file tells Kubernetes what to run and how many.
+
+# It's the blueprint that says:
+
+# Run 3 pods named raven-0, raven-1, raven-2
+# Each pod runs the raven:latest image
+# Expose ports 8080, 9001, 9002
+# Link to the raven headless service for DNS
+
+# When you apply this file, Kubernetes reads it 
+# and creates the 3 broker pods. If one crashes, 
+# K8s automatically restarts it to maintain 3 replicas.
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: raven
+spec:
+  serviceName: raven
+  replicas: 3
+  selector:
+    matchLabels:
+      app: raven
+  template:
+    metadata:
+      labels:
+        app: raven
+    spec:
+      containers:
+        - name: raven
+          image: raven:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+            - containerPort: 9001
+            - containerPort: 9002
+
+
+
+
+
+
+
+
+
+
+
+
+
