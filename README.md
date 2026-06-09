@@ -23,17 +23,38 @@ Go · gRPC · Docker · Kubernetes · Prometheus · Grafana
 
 | Milestone | Status |
 |-----------|--------|
-| M1 — Single node, HTTP API, in-memory store | 🔄 In Progress |
-| M2 — Multi-broker replication | ⏳ Pending |
-| M3 — Partitions + consumer offsets | ⏳ Pending |
-| M4 — At-least-once delivery guarantees | ⏳ Pending |
-| M5 — Docker + Kubernetes StatefulSet | ⏳ Pending |
-| M6 — Prometheus + Grafana observability | ⏳ Pending |
+| M1 — Single node, HTTP API, in-memory store | ✅ Complete |
+| M2 — Multi-broker replication | ✅ Complete |
+| M3 — Partitions + consumer offsets | ✅ Complete |
+| M4 — At-least-once delivery guarantees | ✅ Complete |
+| M5 — Docker + Kubernetes StatefulSet | ✅ Complete |
+| M6 — Prometheus + Grafana observability | ✅ Complete |
+
+## Grafana Dashboard
+
+![Grafana Dashboard](./assets/grafana-dashboard.png)
 
 ## Running Locally
 
 ```bash
 go run cmd/broker/main.go
+```
+
+## Docker Compose
+
+```bash
+docker-compose up --build
+```
+
+## Kubernetes
+
+```bash
+kind create cluster --name raven
+docker build -t raven:latest -f docker/Dockerfile .
+kind load docker-image raven:latest --name raven
+kubectl apply -f k8s/service.yaml
+kubectl apply -f k8s/statefulset.yaml
+kubectl port-forward raven-0 8080:8080
 ```
 
 ## Author
