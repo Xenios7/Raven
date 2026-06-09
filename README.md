@@ -32,7 +32,8 @@ Go · gRPC · Docker · Kubernetes · Prometheus · Grafana
 
 ## Grafana Dashboard
 
-![Grafana Dashboard](./assets/grafana-dashboard.png)
+[![Grafana Dashboard](./assets/grafana-dashboard.png)](./assets/grafana-dashboard.png)
+
 
 ## Running Locally
 
