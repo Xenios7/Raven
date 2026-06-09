@@ -1,39 +1,36 @@
 # Raven
 
-A distributed event streaming system built in Go.  
-Producers publish messages to topics. Multiple broker nodes 
-replicate and store them. Consumer groups pull messages at 
-their own pace, tracking offsets independently.
-
-Think simplified Kafka — built from scratch.
+A distributed event streaming system built in Go. Producers publish 
+messages to topics, multiple broker nodes replicate and store them, 
+and consumer groups pull messages independently while tracking their 
+own offsets. Built as a simplified Kafka from scratch.
 
 ## Architecture
 
-- **Broker nodes** — replicated, each holds a copy of partitions
-- **Topics** — named streams, split into partitions
-- **Producers** — push messages to a topic
-- **Consumers** — pull messages, track offset per partition
-- **Delivery guarantee** — at-least-once
+- Broker nodes: replicated across the cluster, each holding a copy of assigned partitions
+- Topics: named message streams split into partitions
+- Producers: publish messages to a topic with a key for partition routing
+- Consumers: pull messages from a partition, tracking offset per consumer group
+- Delivery guarantee: at-least-once via explicit consumer acknowledgment
 
 ## Tech Stack
 
-Go · gRPC · Docker · Kubernetes · Prometheus · Grafana
+Go, gRPC, Docker, Kubernetes, Prometheus, Grafana
 
-## Project Status
+## Milestones
 
-| Milestone | Status |
-|-----------|--------|
-| M1 — Single node, HTTP API, in-memory store | ✅ Complete |
-| M2 — Multi-broker replication | ✅ Complete |
-| M3 — Partitions + consumer offsets | ✅ Complete |
-| M4 — At-least-once delivery guarantees | ✅ Complete |
-| M5 — Docker + Kubernetes StatefulSet | ✅ Complete |
-| M6 — Prometheus + Grafana observability | ✅ Complete |
+| | Milestone |
+|---|---|
+| M1 | Single node HTTP broker with in-memory store |
+| M2 | Multi-broker replication over gRPC |
+| M3 | Consumer group offset tracking |
+| M4 | At-least-once delivery with explicit ack |
+| M5 | Docker Compose and Kubernetes StatefulSet deployment |
+| M6 | Prometheus metrics and Grafana observability |
 
-## Grafana Dashboard
+## Observability
 
 [![Grafana Dashboard](./assets/grafana-dashboard.png)](./assets/grafana-dashboard.png)
-
 
 ## Running Locally
 
@@ -41,7 +38,7 @@ Go · gRPC · Docker · Kubernetes · Prometheus · Grafana
 go run cmd/broker/main.go
 ```
 
-## Docker Compose
+## Docker
 
 ```bash
 docker-compose up --build
