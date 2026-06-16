@@ -1,8 +1,8 @@
 # Raven
 
-A distributed event streaming system built in Go. Producers publish 
-messages to topics, multiple broker nodes replicate and store them, 
-and consumer groups pull messages independently while tracking their 
+A distributed event streaming system built in Go. Producers publish
+messages to topics, multiple broker nodes replicate and store them,
+and consumer groups pull messages independently while tracking their
 own offsets. Built as a simplified Kafka from scratch.
 
 ## Architecture
@@ -27,6 +27,17 @@ Go, gRPC, Docker, Kubernetes, Prometheus, Grafana
 | M4 | At-least-once delivery with explicit ack |
 | M5 | Docker Compose and Kubernetes StatefulSet deployment |
 | M6 | Prometheus metrics and Grafana observability |
+
+## Benchmarks
+
+Measured on Intel Core i7-9750H, single node, in-memory store, no replication overhead.
+
+| Operation | Iterations | ns/op |
+|---|---|---|
+| Publish | 832,924 | 1,825 |
+| Consume | 4,864,377 | 215 |
+
+Publish throughput: ~550,000 msg/sec. Consume throughput: ~4.6M msg/sec.
 
 ## Observability
 
