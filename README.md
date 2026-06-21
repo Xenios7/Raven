@@ -1,17 +1,10 @@
 # Raven
 
-<img src="./assets/raven.png" alt="Raven Architecture" width="600"/>
-
-*Architecture overview of the Raven event streaming system*
-
-<img src="./assets/at-least-once-delivery.png" alt="Delivery Guarantees" width="600"/>
-
-*At-least-once delivery guarantee implementation*
-
 A distributed event streaming system built in Go. Producers publish
 messages to topics, multiple broker nodes replicate and store them,
 and consumer groups pull messages independently while tracking their
 own offsets. Built as a simplified Kafka from scratch.
+
 ## Architecture
 
 - Broker nodes: replicated across the cluster, each holding a copy of assigned partitions
@@ -19,6 +12,14 @@ own offsets. Built as a simplified Kafka from scratch.
 - Producers: publish messages to a topic with a key for partition routing
 - Consumers: pull messages from a partition, tracking offset per consumer group
 - Delivery guarantee: at-least-once via explicit consumer acknowledgment
+
+<img src="./assets/raven.png" alt="Raven Architecture" width="600"/>
+
+*Architecture overview of the Raven event streaming system*
+
+<img src="./assets/at-least-once-delivery.png" alt="Delivery Guarantees" width="600"/>
+
+*At-least-once delivery guarantee implementation*
 
 ## Tech Stack
 
