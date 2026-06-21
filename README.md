@@ -1,10 +1,10 @@
 # Raven
 
-![Raven Architecture](./assets/raven.png)
+<img src="./assets/raven.png" alt="Raven Architecture" width="600"/>
 
 *Architecture overview of the Raven event streaming system*
 
-![Delivery Guarantees](./assets/at-least-once-delivery.png)
+<img src="./assets/at-least-once-delivery.png" alt="Delivery Guarantees" width="600"/>
 
 *At-least-once delivery guarantee implementation*
 
